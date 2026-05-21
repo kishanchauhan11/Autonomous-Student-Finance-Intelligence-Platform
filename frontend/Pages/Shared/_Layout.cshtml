@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinVault - Autonomous Student Finance Intelligence Platform</title>
+    
+    <!-- IBM Plex Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=IBM+Plex+Serif:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+    
+    <!-- Phosphor Icons -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/@@phosphor-icons/web@2.1.1/src/style.css">
+    
+    <!-- Monochrome Style -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- SIDEBAR NAVIGATION -->
+        <aside class="sidebar" id="sidebar">
+            <div>
+                <div class="sidebar-brand">
+                    <div class="sidebar-logo">FinVault</div>
+                    <div class="sidebar-subtitle">Student Finance Platform</div>
+                </div>
+                
+                <nav class="sidebar-nav">
+                    <!-- SECTION 1: STUDENT VIEW -->
+                    <div id="sidebar-student-section">
+                        <div class="sidebar-section-title">Student Services</div>
+                        <a class="sidebar-item active" onclick="switchTab('dashboard')">
+                            <i class="ph-squares-four"></i> Dashboard
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('payments')">
+                            <i class="ph-credit-card"></i> Fee Payments
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('loans')">
+                            <i class="ph-file-text"></i> Loan Requests
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('refunds')">
+                            <i class="ph-arrow-counter-clockwise"></i> Refund Tracker
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('international')">
+                            <i class="ph-globe"></i> International Finance
+                        </a>
+                    </div>
+                    
+                    <!-- SECTION 2: ADMIN VIEW (HIDDEN IN STUDENT MODE) -->
+                    <div id="sidebar-admin-section" style="display: none;">
+                        <div class="sidebar-section-title">Administration</div>
+                        <a class="sidebar-item" onclick="switchTab('reconciliation')">
+                            <i class="ph-arrows-clockwise"></i> Reconciliation
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('approvals')">
+                            <i class="ph-check-square"></i> Approvals Queue
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('analytics')">
+                            <i class="ph-chart-bar"></i> Analytics & Reports
+                        </a>
+                        <a class="sidebar-item" onclick="switchTab('audit')">
+                            <i class="ph-clipboard-text"></i> Audit & Kafka Logs
+                        </a>
+                        <div class="sidebar-section-title" style="margin-top: 12px;">Officer Tools</div>
+                        <a class="sidebar-item" onclick="toggleOfficerChatPanel()" style="font-weight: 600;">
+                            <i class="ph-robot"></i> Officer AI Intelligence
+                        </a>
+                    </div>
+                </nav>
+            </div>
+            
+            <!-- SIDEBAR PROFILE -->
+            <div class="sidebar-profile">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="user-avatar">AS</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="user-name">Arjun Shah</div>
+                        <div class="sidebar-user-role" id="user-role">Student</div>
+                    </div>
+                </div>
+                <button class="btn-icon" title="Logout" onclick="alert('Session terminated (Keycloak Mock logout).')">
+                    <i class="ph-sign-out"></i>
+                </button>
+            </div>
+        </aside>
+        
+        <!-- MAIN WRAPPER -->
+        <main class="main-wrapper">
+            
+            <!-- TOP BAR -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="topbar-icon-btn" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <i class="ph-list"></i>
+                    </button>
+                    <div class="topbar-breadcrumb" id="breadcrumb">Portal / Student Dashboard</div>
+                </div>
+                
+                <div class="topbar-center">
+                    <div class="search-container">
+                        <i class="ph-magnifying-glass search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search invoices, transactions, letters...">
+                    </div>
+                </div>
+                
+                <div class="topbar-right">
+                    <!-- Student Selector Dropdown -->
+                    <div id="student-switcher-wrapper" style="margin-right: 12px; display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; color: #555;">Mock Student:</span>
+                        <select id="student-switcher" onchange="changeStudentProfile(this.value)" style="background-color: #fff; color: #000; border: 1.5px solid #000; padding: 4px 10px; font-family: 'IBM Plex Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 4px; outline: none; height: 32px;">
+                            <option value="STU-2021-4892">Arjun Shah (INR)</option>
+                            <option value="STU-2022-1082">Sarah Connor (USD)</option>
+                        </select>
+                    </div>
+
+                    <!-- Toggle Portal Mode Button -->
+                    <button class="btn-toggle-portal" id="btn-toggle-portal" onclick="togglePortalMode()">
+                        Switch to Accounts Portal
+                    </button>
+                    
+                    <button class="topbar-icon-btn" onclick="toggleNotifications()" title="Notifications">
+                        <i class="ph-bell"></i>
+                        <span class="notification-badge" id="notif-count">2</span>
+                    </button>
+                    
+                    <button class="btn-primary btn-sm" onclick="toggleChatPanel()">
+                        <i class="ph-robot"></i> AI Assistant
+                    </button>
+                </div>
+            </header>
+            
+            <!-- CONTENT AREA -->
+            <div class="content-zone" id="content-zone">
+                @RenderBody()
+            </div>
+            
+            <!-- SLIDING AI CHAT PANEL - STUDENT -->
+            <div class="ai-panel" id="ai-panel">
+                <div class="ai-panel-header">
+                    <div class="ai-panel-title-lockup">
+                        <div class="ai-panel-title">AI Finance Assistant</div>
+                        <div class="ai-panel-status">
+                            <span class="ai-panel-status-dot"></span> Active (DeepSeek v4 Pro + Nemotron)
+                        </div>
+                    </div>
+                    <button class="modal-close" onclick="toggleChatPanel()">&times;</button>
+                </div>
+                
+                <div class="ai-chat-thread" id="ai-chat-thread">
+                    <!-- Default AI welcome bubble -->
+                    <div class="chat-bubble-container ai">
+                        <div class="chat-bubble">
+                            Good day! I am the Root Finance Orchestrator for the university. I can assist you with payment inquiries, refund status tracking, international SWIFT bank details, or generating loan demand letters. How can I help you today?
+                        </div>
+                        <div class="chat-timestamp">Just now</div>
+                    </div>
+                </div>
+                
+                <div class="ai-panel-input-bar">
+                    <input type="text" class="ai-chat-input" id="ai-chat-input" placeholder="Ask about fees, refunds, SWIFT transfer..." onkeypress="handleChatKey(event)">
+                    <button class="btn-primary btn-sm" style="height: 38px; width: 38px; padding: 0;" onclick="sendChatMessage()">
+                        <i class="ph-paper-plane-right" style="font-size: 16px;"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SLIDING AI CHAT PANEL - FINANCE OFFICER -->
+            <div class="ai-panel" id="officer-ai-panel" style="border-left: 3px solid #0A0A0A;">
+                <div class="ai-panel-header" style="background: #0A0A0A; color: #fff;">
+                    <div class="ai-panel-title-lockup">
+                        <div class="ai-panel-title" style="color: #fff;">Finance Officer Intelligence</div>
+                        <div class="ai-panel-status" style="color: #aaa;">
+                            <span class="ai-panel-status-dot" style="background: #4ade80;"></span> Admin Mode — Admin Actions Enabled
+                        </div>
+                    </div>
+                    <button class="modal-close" onclick="toggleOfficerChatPanel()" style="color: #fff;">&times;</button>
+                </div>
+                
+                <div class="ai-chat-thread" id="officer-ai-chat-thread">
+                    <!-- Default Officer AI welcome bubble -->
+                    <div class="chat-bubble-container ai">
+                        <div class="chat-bubble" style="background: #F5F5F5; border: 1px solid #0A0A0A;">
+                            Good day, Finance Officer Sarah Jenkins. I have full visibility over student financial records. You can ask me to:<br><br>
+                            &bull; <strong>Summarize pending approvals</strong> or escalations<br>
+                            &bull; <strong>Review specific student balances</strong> (e.g. "Show balance for Arjun Shah")<br>
+                            &bull; <strong>Analyze reconciliation exceptions</strong><br>
+                            &bull; <strong>Explain refund policy rules</strong> from the knowledge base<br><br>
+                            How can I assist today?
+                        </div>
+                        <div class="chat-timestamp">Just now</div>
+                    </div>
+                </div>
+                
+                <div class="ai-panel-input-bar" style="border-top: 1px solid #0A0A0A;">
+                    <input type="text" class="ai-chat-input" id="officer-ai-chat-input" placeholder="e.g. Summarize all pending refund approvals..." onkeypress="handleOfficerChatKey(event)">
+                    <button class="btn-primary btn-sm" style="height: 38px; width: 38px; padding: 0; background: #0A0A0A;" onclick="sendOfficerChatMessage()">
+                        <i class="ph-paper-plane-right" style="font-size: 16px;"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- TOAST CONTAINER -->
+            <div class="toast-container" id="toast-container"></div>
+            
+        </main>
+        
+    </div>
+
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
