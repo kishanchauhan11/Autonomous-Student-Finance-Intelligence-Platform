@@ -1,0 +1,31 @@
+apiVersion: v2
+name: finvault-platform
+description: |
+  Autonomous Student Finance Intelligence Platform — Helm Chart.
+  Deploys the full FinVault stack including: FastAPI backend, .NET frontend,
+  Qdrant vector DB, Redis cache, NVIDIA NIM GPU inference, and Kafka event broker.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - finvault
+  - finance
+  - ai
+  - education
+  - nvidia-nim
+  - multi-agent
+
+maintainers:
+  - name: FinVault Platform Team
+    email: devops@finvault.internal
+
+dependencies:
+  - name: redis
+    version: ">=17.0.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: kafka
+    version: ">=26.0.0"
+    repository: https://charts.bitnami.com/bitnami
+    condition: kafka.enabled

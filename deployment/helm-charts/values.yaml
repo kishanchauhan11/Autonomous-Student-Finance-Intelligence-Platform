@@ -1,0 +1,152 @@
+# Default values for finvault-platform Helm chart.
+# Override with: helm install finvault . -f custom-values.yaml
+
+# ── Global Settings ─────────────────────────────────────────────────────────
+global:
+  imageRegistry: "ghcr.io/kishanchauhan11"
+  imagePullPolicy: IfNotPresent
+  environment: production
+  timezone: "Asia/Kolkata"
+
+# ── Backend (FastAPI + AI Orchestrator) ────────────────────────────────────
+backend:
+  enabled: true
+  image:
+    repository: finvault-backend
+    tag: "1.0.0"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+  service:
+    type: ClusterIP
+    port: 8000
+  env:
+    NVIDIA_API_KEY: ""            # Set via Kubernetes Secret
+    NVIDIA_BASE_URL: "https://integrate.api.nvidia.com/v1"
+    QDRANT_HOST: "qdrant-service"
+    QDRANT_PORT: "6333"
+    REDIS_URL: "redis://redis-service:6379"
+    MSSQL_CONNECTION_STRING: ""  # Set via Kubernetes Secret
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# ── Frontend (.NET Core Razor Pages) ──────────────────────────────────────
+frontend:
+  enabled: true
+  image:
+    repository: finvault-frontend
+    tag: "1.0.0"
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+  service:
+    type: ClusterIP
+    port: 5000
+
+# ── NVIDIA NIM GPU Inference ──────────────────────────────────────────────
+nvidianim:
+  enabled: false                # Enable when deploying on-premise GPU node
+  image:
+    repository: nvcr.io/nim/deepseek-ai/deepseek-r1
+    tag: "1.5b-instruct-fp8-throughput-latest"
+  replicaCount: 1
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  service:
+    type: ClusterIP
+    port: 8000
+  nodeSelector:
+    nvidia.com/gpu: "true"
+  tolerations:
+    - key: "nvidia.com/gpu"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+# ── Qdrant Vector Database ────────────────────────────────────────────────
+qdrant:
+  enabled: true
+  image:
+    repository: qdrant/qdrant
+    tag: "v1.9.0"
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "standard"
+  service:
+    type: ClusterIP
+    port: 6333
+
+# ── Redis Cache & Session Store ───────────────────────────────────────────
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: true
+      size: 2Gi
+
+# ── Kafka Event Broker ────────────────────────────────────────────────────
+kafka:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 5Gi
+  topics:
+    - payment-reconciled
+    - refund-submitted
+    - loan-letter-generated
+    - notification-sent
+    - agent-response-generated
+    - approval-required
+    - escalation-triggered
+    - officer-ai-query
+
+# ── Ingress (Nginx) ──────────────────────────────────────────────────────
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "16m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+  hosts:
+    - host: finvault.yourdomain.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: finvault-tls-secret
+      hosts:
+        - finvault.yourdomain.com
+
+# ── Monitoring ────────────────────────────────────────────────────────────
+monitoring:
+  prometheus:
+    enabled: true
+    scrapeInterval: "15s"
+  grafana:
+    enabled: true
+    adminPassword: "finvault-grafana-admin"
+  loki:
+    enabled: true
